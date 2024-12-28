@@ -1,5 +1,11 @@
 # @ayu-sh-kr/dota-rest
 
+## 1.0.3
+
+### Patch Changes
+
+- 8aa0e1f: Fix build issue where, codes where hidden upon import to other project
+
 ## 1.0.2
 
 ### Patch Changes
