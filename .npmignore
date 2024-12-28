@@ -4,3 +4,6 @@ node_modules
 .changeset
 .idea
 src
+tsconfig.json
+CHANGELOG.md
+pnpm-lock.yaml
