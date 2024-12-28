@@ -1,0 +1,19 @@
+{
+  "name": "@ayu-sh-kr/dota-rest",
+  "version": "0.0.1",
+  "author": "ayu-sh-kr",
+  "description": "@ayu-sh-kr/dota-rest is a simple, intuitive and fluent Rest Client base on the 'fetch' API",
+  "main": "dist/index.js",
+  "scripts": {
+    "lint": "tsc",
+    "build": "tsup src/**/*.ts --format esm --dts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.5.3",
+    "tsup": "^8.1.0",
+    "@changesets/cli": "^2.27.7",
+    "@swc/core": "^1.6.6"
+  },
+  "private": false
+}
