@@ -1,5 +1,11 @@
 # @ayu-sh-kr/dota-rest
 
+## 1.0.2
+
+### Patch Changes
+
+- 9f93d32: Fix build issue and structure the build files
+
 ## 1.0.1
 
 ### Patch Changes
