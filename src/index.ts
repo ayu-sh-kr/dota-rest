@@ -8,13 +8,21 @@ export interface RequestMaker<T> {
     body(item: object): RequestMaker<T>;
     retrieve(): RequestMaker<T>;
     toEntity(): Promise<Entity<T>>;
-    toVoid(): Promise<void>;
+    toVoid(): Promise<Void>;
     toResponse(): Promise<Response>
 }
 
 export interface Entity<T> {
     status: number;
-    data: T
+    data: T;
+    headers?: Headers;
+    type?: ResponseType;
+}
+
+export interface Void {
+    status: number;
+    headers: Headers;
+    type: ResponseType;
 }
 
 export type Header = { [key: string]: string };
@@ -250,8 +258,8 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
     async toEntity(): Promise<ResponseEntity<T>> {
         const response = await this._response;
         return new ResponseEntity<T>(
-            response.status,
-            await response.json()
+            await response.json(),
+            response.status
         )
     }
 
@@ -261,8 +269,13 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
      *
      * @returns A promise that resolves to void.
      */
-    async toVoid(): Promise<void> {
-        return Promise.resolve(undefined);
+    async toVoid(): Promise<Void> {
+        const response = await this._response;
+        return new ResponseVoid(
+            response.headers,
+            response.status,
+            response.type
+        );
     }
 
 
@@ -300,8 +313,43 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
     }
 }
 
+
+/**
+ * The `ResponseEntity` class represents the response from an HTTP request.
+ *
+ * This class encapsulates the response data, status, headers, and type.
+ * It provides a structured way to handle and access the response information.
+ *
+ * @typeParam T - The type of the response data.
+ */
 export class ResponseEntity<T> implements Entity<T>{
-    constructor(public status: number, public data: T) {
+    public readonly data!: T;
+    public readonly status!: number;
+    public readonly headers?: Headers;
+    public readonly type?: ResponseType;
+
+    constructor(data: T, status: number) {
+        this.data = data;
+        this.status = status;
     }
 }
 
+
+/**
+ * The `ResponseVoid` class represents an HTTP response with no body content.
+ *
+ * This class encapsulates the response status, headers, and type.
+ * It provides a structured way to handle and access the response information when no body content is expected.
+ */
+export class ResponseVoid implements Void{
+
+    public readonly headers!: Headers;
+    public readonly status!: number;
+    public readonly type!: ResponseType;
+
+    constructor(headers: Headers, status: number, type: ResponseType) {
+        this.headers = headers;
+        this.status = status;
+        this.type = type;
+    }
+}
