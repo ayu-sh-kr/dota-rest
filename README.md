@@ -19,11 +19,11 @@ npm install @ayu-sh-kr/dota-rest
 To create and configure an instance of `RestClient`, use the `RestClientBuilder`:
 
 ```typescript
-import { RestClientBuilder } from './path-to-rest-client-builder';
+import {RestClient} from "@ayu-sh-kr/dota-rest";
 
-const client = new RestClientBuilder()
+const client = RestClient.create()
     .baseUrl('https://api.example.com')
-    .defaultHeaders({ 'Authorization': 'Bearer token' })
+    .defaultHeaders({'Authorization': 'Bearer token'})
     .build();
 ```
 
@@ -97,6 +97,21 @@ const response = await client.delete<void>()
 console.log('User deleted');
 ```
 
+#### Resolving request to response
+To get the `Response` object of the fetch request and taking action as per your requirement.
+
+```typescript
+const response = await client.get<User>()
+    .url('/users/1')
+    .retreive()
+    .toResponse()
+
+console.log(response.status)
+const data = await response.json();
+console.log(data)
+```
+
 ## Conclusion
 
-This documentation covers the basic usage of the `RestClient` class for making HTTP requests. For more advanced usage and customization, refer to the class and method documentation in the source code.
+This documentation covers the basic usage of the `RestClient` class for making HTTP requests. 
+For more advanced usage and customization, refer to the class and method documentation in the source code.
