@@ -1,6 +1,6 @@
 {
   "name": "@ayu-sh-kr/dota-rest",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "ayu-sh-kr",
   "description": "@ayu-sh-kr/dota-rest is a simple, intuitive and fluent Rest Client base on the 'fetch' API",
   "main": "dist/index.mjs",

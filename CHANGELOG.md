@@ -1,5 +1,11 @@
 # @ayu-sh-kr/dota-rest
 
+## 1.0.4
+
+### Patch Changes
+
+- 975a95c: implemented ResponseVoid and enhanced the docs
+
 ## 1.0.3
 
 ### Patch Changes
