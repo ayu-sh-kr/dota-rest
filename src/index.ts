@@ -257,10 +257,15 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
      */
     async toEntity(): Promise<ResponseEntity<T>> {
         const response = await this._response;
-        return new ResponseEntity<T>(
-            await response.json(),
-            response.status
-        )
+        const entity = ResponseEntity.create<T>(response);
+
+        const contentType = response.headers.get('Content-Type');
+        if(contentType && contentType.includes('application/json')) {
+            entity.data = await response.json();
+        } else {
+            entity.data = await response.text() as unknown as T;
+        }
+        return entity;
     }
 
 
@@ -271,11 +276,7 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
      */
     async toVoid(): Promise<Void> {
         const response = await this._response;
-        return new ResponseVoid(
-            response.headers,
-            response.status,
-            response.type
-        );
+        return ResponseVoid.create(response);
     }
 
 
@@ -323,14 +324,24 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
  * @typeParam T - The type of the response data.
  */
 export class ResponseEntity<T> implements Entity<T>{
-    public readonly data!: T;
-    public readonly status!: number;
-    public readonly headers?: Headers;
-    public readonly type?: ResponseType;
+    public data!: T;
+    public isError: boolean = false;
+    public error?: Error;
 
-    constructor(data: T, status: number) {
-        this.data = data;
-        this.status = status;
+
+    private constructor(
+        public readonly status: number,
+        public readonly headers: Headers,
+        public readonly type: ResponseType,
+        public readonly statusText: string,
+        public readonly isRedirected: boolean,
+    ) {
+    }
+
+    static create<T>(response: Response) {
+        return new ResponseEntity<T>(
+            response.status, response.headers, response.type, response.statusText, response.redirected,
+        );
     }
 }
 
@@ -343,13 +354,19 @@ export class ResponseEntity<T> implements Entity<T>{
  */
 export class ResponseVoid implements Void{
 
-    public readonly headers!: Headers;
-    public readonly status!: number;
-    public readonly type!: ResponseType;
 
-    constructor(headers: Headers, status: number, type: ResponseType) {
-        this.headers = headers;
-        this.status = status;
-        this.type = type;
+    private constructor(
+        public readonly status: number,
+        public readonly headers: Headers,
+        public readonly type: ResponseType,
+        public readonly statusText: string,
+        public readonly isRedirected: boolean,
+    ) {
+    }
+
+    static create(response: Response) {
+        return new ResponseVoid(
+            response.status, response.headers, response.type, response.statusText, response.redirected,
+        );
     }
 }
