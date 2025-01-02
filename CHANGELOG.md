@@ -1,5 +1,11 @@
 # @ayu-sh-kr/dota-rest
 
+## 1.0.5
+
+### Patch Changes
+
+- aea93b9: fix toEntity method to handle the data type conversion inorder avoid failure when response is not of the type of json
+
 ## 1.0.4
 
 ### Patch Changes
