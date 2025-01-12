@@ -30,23 +30,20 @@ export class RestUtils {
 
 
     /**
-     * Performs a fetch request with the specified URI, method, headers, and body.
+     * Make a fetch call based on the {@link HttpRequestBody} and return the response object as a promise.
      *
-     * @param options - The options for performing the fetch request.
-     * @param options.uri - The URI to which the request is sent.
-     * @param options.method - The HTTP method to use for the request (e.g., 'GET', 'POST').
-     * @param options.headers - Optional headers to include in the request.
-     * @param options.body - Optional body content to include in the request.
-     * @returns A promise that resolves to the response of the fetch request.
+     * A `RequestInit` and `AbortController` is set up to make the fetch call with ability to abort once the specified
+     * time is passed. Specified time can be user provided or default.
+     *
+     * @param requestBody - {@link HttpRequestBody} object containing required field to construct a `RequestInit` for `fetch` call.
+     * @return Promise<Response> - Promise resolving to the `Response` object
      */
-    static performFetch = ({uri, method, headers, body}: {
-        uri: string,
-        method: string,
-        headers?: Header,
-        body?: string
-    }) => {
+    static performFetch = async (requestBody: HttpRequestBody) => {
+        const abortController = new AbortController();
+        const {uri, method, headers, body} = requestBody;
         const requestInit: RequestInit = {
-            method: method
+            method: method,
+            signal: abortController.signal
         }
 
         if(headers) {
@@ -57,6 +54,19 @@ export class RestUtils {
             requestInit.body = body;
         }
 
-        return fetch(uri, requestInit)
+        const timeOutId  = requestBody.timeout ?
+            setTimeout(() => abortController.abort(), requestBody.timeout) :
+            undefined;
+
+        return await fetch(uri, requestInit)
+            .finally(() => clearTimeout(timeOutId));
     }
+}
+
+export interface HttpRequestBody {
+    uri: string,
+    method: string,
+    headers?: Header,
+    body?: string,
+    timeout?: number
 }
