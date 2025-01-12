@@ -1,5 +1,11 @@
 # @ayu-sh-kr/dota-rest
 
+## 1.0.6
+
+### Patch Changes
+
+- e38a5ab: added test coverage and introduced minor feature for to add timeout to the `RestClient`
+
 ## 1.0.5
 
 ### Patch Changes
