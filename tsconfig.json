@@ -14,8 +14,11 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
-    "types": ["node"],
-    "typeRoots": ["node_modules/@types", "dist"]
+    "types": ["node", "jest"],
+    "typeRoots": ["node_modules/@types", "dist"],
+    "paths": {
+      "@dota/*": ["./src/*"]
+    }
   },
-  "include": ["src"]
+  "include": ["src", "test"]
 }
