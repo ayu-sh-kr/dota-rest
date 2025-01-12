@@ -111,6 +111,31 @@ const data = await response.json();
 console.log(data)
 ```
 
+#### Creating `RestClient` with timeout
+By default the client have a timout of 10s but it can be changed during the build of `RestClient` or 
+during making the request.
+
+Adding timeout during client buildup.
+```typescript
+import {RestClient} from "@ayu-sh-kr/rest";
+
+const restClient = RestClient.creat()
+    .baseUrl('http://localhost:8080')
+    .defaultHeaders({'Authorization': 'Bearer kh.....'})
+    .timeout(5000)
+    .build();
+```
+
+Adding timeout during client setup.
+```typescript
+const response = await client.get<User>()
+    .url('/users/1')
+    .timeout(5000)
+    .retreive()
+    .toResponse()
+```
+
+
 ## Conclusion
 
 This documentation covers the basic usage of the `RestClient` class for making HTTP requests. 
