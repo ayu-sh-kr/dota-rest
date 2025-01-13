@@ -7,11 +7,6 @@ const config: Config = {
     transform: {
         "^.+\\.(ts|tsx)$": "ts-jest",
     },
-    globals: {
-      "ts-jest": {
-          tsconfig: "tsconfig.json"
-      }
-    },
     testEnvironment: 'node',
     preset: 'ts-jest',
     moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' }),
