@@ -3,7 +3,9 @@ node_modules
 .github
 .changeset
 .idea
+test
 src
 tsconfig.json
 CHANGELOG.md
 pnpm-lock.yaml
+jest.config.ts
