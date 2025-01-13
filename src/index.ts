@@ -212,7 +212,7 @@ export class RestClient {
     delete<T>(): RestRequestMaker<T> {
         return new RestRequestMaker<T>({
             method: 'DELETE',
-            headers: {'Content-type': 'application/json', ...this.HEADERS},
+            headers: {...this.HEADERS},
             baseUri: this.BASE_URI,
             timeout: this.TIMEOUT
         })
