@@ -33,7 +33,11 @@ describe('RestRequestMaker', () => {
     });
 
     it('should handle fetch request timeout', async () => {
-        (global.fetch as jest.Mock).mockImplementationOnce(() => new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)));
+        (global.fetch as jest.Mock).mockImplementationOnce(
+            () => new Promise(
+                (_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)
+            )
+        );
 
         const requestMaker = new RestRequestMaker({
             method: 'GET',
