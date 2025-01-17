@@ -16,10 +16,9 @@ describe('RestClient', () => {
             .timeout(5000)
             .build();
 
+        expect(client).toHaveProperty("config")
         expect(client).toMatchObject({
-            "HEADERS": { 'Authorization': 'Bearer token' },
-            "BASE_URI": 'https://api.example.com',
-            "TIMEOUT": 5000
+            "config": {"baseUrl": "https://api.example.com", "headers": {"Authorization": "Bearer token"}, "timout": 5000}
         })
     });
 
