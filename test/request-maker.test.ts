@@ -119,4 +119,56 @@ describe('RestRequestMaker', () => {
         }));
         expect(response.data).toEqual({ data: 'test' });
     });
+
+    it('should call the user-provided handler on undesirable status code', async () => {
+        const mockResponse = new Response(JSON.stringify({ error: 'Not Found' }), {
+            status: 404,
+            statusText: 'Not Found',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+
+        const handler = jest.fn();
+
+        const requestMaker = new RestRequestMaker({
+            method: 'GET',
+            baseUri: 'https://api.example.com',
+            timeout: 5000,
+            handler: handler
+        });
+
+        requestMaker.uri('/not-found').retrieve();
+
+        await requestMaker.toEntity();
+
+        expect(handler).toHaveBeenCalledWith(expect.objectContaining({
+            status: 404,
+            statusText: 'Not Found'
+        }));
+    });
+
+    it('should throw an error if the status code is not 200', async () => {
+        const mockResponse = new Response(JSON.stringify({ error: 'Not Found' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' }
+        });
+        (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+
+        const errorHandler = (response: Response) => {
+            if (response.status !== 200) {
+                throw new Error(`Request failed with status code ${response.status}`);
+            }
+        };
+
+        const requestMaker = new RestRequestMaker({
+            method: 'GET',
+            baseUri: 'https://api.example.com',
+            timeout: 5000,
+            handler: errorHandler
+        });
+
+        requestMaker.uri('/not-found').retrieve();
+
+        await expect(requestMaker.toEntity()).rejects.toThrow('Request failed with status code 404');
+    });
 });
