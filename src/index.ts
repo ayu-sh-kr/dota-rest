@@ -30,10 +30,52 @@ export type Param = {key: string, value: string | number};
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 export interface RequestSetup {
-    baseUri?: string,
     method?: HttpMethod
+    baseUri?: string,
     headers?: Header,
-    timeout?: number
+    timeout?: number,
+    handler?: (response: Response) => void;
+}
+
+/**
+ * Configuration options for the `RestClient`.
+ */
+export type RestClientConfig = {
+    /**
+     * The base URL of the API to be used for each request.
+     * This can be set to make your code cleaner for multiple requests to the same API.
+     *
+     * Example:
+     * ```typescript
+     * const client = RestClient.create()
+     *      .baseUrl('https://api.example.com')
+     *      .defaultHeaders({ 'Authorization': 'Bearer token' })
+     *      .timeout(5000)
+     *      .build();
+     * ```
+     */
+    baseUrl?: string;
+
+    /**
+     * Default headers to be included in each request.
+     * This can include headers like `Authorization` or other API-specific headers required by the service provider.
+     */
+    headers?: Header;
+
+    /**
+     * The amount of time (in milliseconds) after which the request will be aborted if no response is received.
+     * By default, the timeout is set to 10000ms (10 seconds).
+     * This can be configured for the `RestClient` as a whole or for specific requests.
+     */
+    timout?: number;
+
+    /**
+     * A handler function responsible for handling responses with undesirable status codes.
+     * This function should throw an error or return void after execution.
+     *
+     * @param response - The response returned by the fetch API after the API call.
+     */
+    handler?: (response: Response) => void;
 }
 
 
@@ -56,22 +98,10 @@ export interface RequestSetup {
  */
 export class RestClient {
 
-    private readonly BASE_URI!: string;
-    private readonly HEADERS!: Header;
-    private readonly TIMEOUT!: number;
+    private config!: RestClientConfig;
 
-    private constructor(uri?: string, headers?: Header, timeout?: number) {
-        if (uri) {
-            this.BASE_URI = uri;
-        }
-
-        if (headers) {
-            this.HEADERS = headers;
-        }
-
-        if(timeout) {
-            this.TIMEOUT = timeout;
-        }
+    private constructor(config: RestClientConfig) {
+        this.config = config;
     }
 
     /**
@@ -131,7 +161,11 @@ export class RestClient {
              * @returns A new instance of the `RestClient` configured with the specified base URL and headers.
              */
             public build() {
-                return new RestClient(this.BASE_URL, this.HEADERS, this.TIMEOUT);
+                return new RestClient({
+                    baseUrl: this.BASE_URL,
+                    headers: this.HEADERS,
+                    timout: this.TIMEOUT
+                });
             }
         }
 
@@ -148,9 +182,10 @@ export class RestClient {
     post<T>(): RestRequestMaker<T> {
         return new RestRequestMaker<T>({
             method: 'POST',
-            headers: {'Content-type': 'application/json', ...this.HEADERS},
-            baseUri: this.BASE_URI,
-            timeout: this.TIMEOUT
+            headers: {'Content-type': 'application/json', ...this.config.headers},
+            baseUri: this.config.baseUrl,
+            timeout: this.config.timout,
+            handler: this.config.handler
         })
     }
 
@@ -164,9 +199,10 @@ export class RestClient {
     get<T>(): RestRequestMaker<T> {
         return new RestRequestMaker<T>({
             method: 'GET',
-            headers: {...this.HEADERS},
-            baseUri: this.BASE_URI,
-            timeout: this.TIMEOUT
+            headers: {...this.config.headers},
+            baseUri: this.config.baseUrl,
+            timeout: this.config.timout,
+            handler: this.config.handler
         })
     }
 
@@ -180,9 +216,10 @@ export class RestClient {
     patch<T>(): RestRequestMaker<T> {
         return new RestRequestMaker<T>({
             method: 'PATCH',
-            headers: {'Content-type': 'application/json', ...this.HEADERS},
-            baseUri: this.BASE_URI,
-            timeout: this.TIMEOUT
+            headers: {'Content-type': 'application/json', ...this.config.headers},
+            baseUri: this.config.baseUrl,
+            timeout: this.config.timout,
+            handler: this.config.handler
         })
     }
 
@@ -196,9 +233,10 @@ export class RestClient {
     put<T>(): RestRequestMaker<T> {
         return new RestRequestMaker<T>({
             method: 'PUT',
-            headers: {'Content-type': 'application/json', ...this.HEADERS},
-            baseUri: this.BASE_URI,
-            timeout: this.TIMEOUT
+            headers: {'Content-type': 'application/json', ...this.config.headers},
+            baseUri: this.config.baseUrl,
+            timeout: this.config.timout,
+            handler: this.config.handler
         })
     }
 
@@ -212,9 +250,10 @@ export class RestClient {
     delete<T>(): RestRequestMaker<T> {
         return new RestRequestMaker<T>({
             method: 'DELETE',
-            headers: {...this.HEADERS},
-            baseUri: this.BASE_URI,
-            timeout: this.TIMEOUT
+            headers: {...this.config.headers},
+            baseUri: this.config.baseUrl,
+            timeout: this.config.timout,
+            handler: this.config.handler
         })
     }
 }
@@ -237,10 +276,11 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
     private _response!: Promise<Response>;
     private _body!: string;
     private _uri!: string;
+    private _handler?: (response: Response) => void;
     private readonly _params!: URLSearchParams;
 
     constructor(requestSetup: RequestSetup) {
-        const {method, headers, baseUri, timeout} = requestSetup;
+        const {method, headers, baseUri, timeout, handler} = requestSetup;
         if(method) {
             this.method = method;
         }
@@ -254,6 +294,8 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
         if (timeout) {
             this._timeout = timeout;
         }
+
+        this._handler = handler;
 
         this._params = new URLSearchParams();
     }
@@ -308,6 +350,9 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
      */
     async toEntity(): Promise<ResponseEntity<T>> {
         const response = await this._response;
+        if(this._handler) {
+            this._handler(response)
+        }
         const entity = ResponseEntity.create<T>(response);
 
         const contentType = response.headers.get('Content-Type');
