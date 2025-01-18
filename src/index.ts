@@ -29,12 +29,14 @@ export type Header = { [key: string]: string };
 export type Param = {key: string, value: string | number};
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
+export type ResponseHandler = (response: Response) => void;
+
 export interface RequestSetup {
     method?: HttpMethod
     baseUri?: string,
     headers?: Header,
     timeout?: number,
-    handler?: (response: Response) => void;
+    handler?: ResponseHandler
 }
 
 /**
@@ -75,7 +77,7 @@ export type RestClientConfig = {
      *
      * @param response - The response returned by the fetch API after the API call.
      */
-    handler?: (response: Response) => void;
+    handler?: ResponseHandler
 }
 
 
@@ -115,9 +117,10 @@ export class RestClient {
      */
     static create() {
         class RestClientBuilder {
-            BASE_URL = '';
-            HEADERS!: Header;
-            TIMEOUT: number = 10000;
+            private _baseurl = '';
+            private _headers!: Header;
+            private _timout: number = 10000;
+            private _handler!: ResponseHandler;
 
             /**
              * Sets the base URL for the `RestClient`.
@@ -126,7 +129,7 @@ export class RestClient {
              * @returns The current instance of the `RestClientBuilder` for method chaining.
              */
             public baseUrl(url: string) {
-                this.BASE_URL = url;
+                this._baseurl = url;
                 return this;
             }
 
@@ -138,7 +141,7 @@ export class RestClient {
              * @returns The current instance of the `RestClientBuilder` for method chaining.
              */
             public defaultHeaders(headers: Header) {
-                this.HEADERS = headers;
+                this._headers = headers;
                 return this;
             }
 
@@ -150,7 +153,18 @@ export class RestClient {
              * @returns The current instance of the `RestClientBuilder` for method chaining.
              */
             public timeout(timeout: number) {
-                this.TIMEOUT = timeout;
+                this._timout = timeout;
+                return this;
+            }
+
+
+            /**
+             * Use this to set a response handler which will be used to process response before
+             * resolving to `toEntity`, `toVoid` or `toResponse`
+             * @param handler - Function to resolve response.
+             */
+            public handler(handler: ResponseHandler) {
+                this._handler = handler;
                 return this;
             }
 
@@ -162,9 +176,10 @@ export class RestClient {
              */
             public build() {
                 return new RestClient({
-                    baseUrl: this.BASE_URL,
-                    headers: this.HEADERS,
-                    timout: this.TIMEOUT
+                    baseUrl: this._baseurl,
+                    headers: this._headers,
+                    timout: this._timout,
+                    handler: this._handler
                 });
             }
         }
@@ -372,6 +387,9 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
      */
     async toVoid(): Promise<Void> {
         const response = await this._response;
+        if(this._handler) {
+            this._handler(response)
+        }
         return ResponseVoid.create(response);
     }
 
@@ -394,7 +412,11 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
      * @returns A promise that resolves to a `Response` object.
      */
     async toResponse(): Promise<Response> {
-        return this._response;
+        const response = await this._response;
+        if(this._handler) {
+            this._handler(response)
+        }
+        return response;
     }
 
 
