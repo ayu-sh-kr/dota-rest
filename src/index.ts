@@ -1,14 +1,72 @@
 import {RestUtils} from "@dota/RestUtils.ts";
 
 export interface RequestMaker<T> {
+
+    /**
+     * Sets the URI for the request.
+     *
+     * @param uri - The URI to be used for the request.
+     * @returns The current instance of the `RestRequestMaker` for method chaining.
+     */
     uri(uri: string): RequestMaker<T>;
+
+    /**
+     * Adds the provided header to the request.
+     *
+     * @param header - The header to be added to the request.
+     * @returns The current instance of the `RestRequestMaker` for method chaining.
+     */
     header(header: Header): RequestMaker<T>;
-    param(param: Param): RequestMaker<T>
+
+    /**
+     * Adds a query parameter to the request URI.
+     *
+     * @param param - The query parameter to be added to the request URI.
+     * @returns The current instance of the `RestRequestMaker` for method chaining.
+     */
+    param(param: Param): RequestMaker<T>;
+
+    /**
+     * Sets the request body with the provided item.
+     *
+     * @param item - The object to be used as the request body.
+     * @returns The current instance of the `RestRequestMaker` for method chaining.
+     */
     body(item: object): RequestMaker<T>;
+
+    /**
+     * Initiates the fetch request with the configured URI, method, headers, and body.
+     *
+     * @returns The current instance of the `RestRequestMaker` for method chaining.
+     */
     retrieve(): RequestMaker<T>;
+
+    /**
+     * Converts the response to an `Entity` object containing the status and data.
+     *
+     * @returns A promise that resolves to an `Entity` object containing the response status and data.
+     */
     toEntity(): Promise<Entity<T>>;
+
+    /**
+     * Converts the response to void.
+     *
+     * @returns A promise that resolves to void.
+     */
     toVoid(): Promise<Void>;
+
+    /**
+     * Converts the response to a `Response` object.
+     *
+     * @returns A promise that resolves to a `Response` object.
+     */
     toResponse(): Promise<Response>;
+
+    /**
+     * Update the timeout to the fetch call.
+     * @param timeout - The time in millisecond to be assigned to fetch before abort.
+     * @return The current instance of the `RestRequestMaker` for method chaining.
+     */
     timeout(timeout: number): RequestMaker<T>
 }
 
@@ -316,35 +374,18 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
     }
 
 
-    /**
-     * Sets the request body with the provided item.
-     *
-     * @param item - The object to be used as the request body.
-     * @returns The current instance of the `RestRequestMaker` for method chaining.
-     */
     body(item: object): RequestMaker<T> {
         this._body = JSON.stringify(item);
         return this;
     }
 
 
-    /**
-     * Adds the provided header to the request.
-     *
-     * @param header - The header to be added to the request.
-     * @returns The current instance of the `RestRequestMaker` for method chaining.
-     */
     header(header: Header): RequestMaker<T> {
         this._headers = {...header, ...this._headers}
         return this;
     }
 
 
-    /**
-     * Initiates the fetch request with the configured URI, method, headers, and body.
-     *
-     * @returns The current instance of the `RestRequestMaker` for method chaining.
-     */
     retrieve(): RequestMaker<T> {
         const uri = RestUtils.createURI({baseURI: this.baseUri, uri: this._uri, params: this._params});
         this._response = RestUtils.performFetch({
@@ -358,11 +399,6 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
     }
 
 
-    /**
-     * Converts the response to an `Entity` object containing the status and data.
-     *
-     * @returns A promise that resolves to an `Entity` object containing the response status and data.
-     */
     async toEntity(): Promise<ResponseEntity<T>> {
         const response = await this._response;
         if(this._handler) {
@@ -380,11 +416,6 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
     }
 
 
-    /**
-     * Converts the response to void.
-     *
-     * @returns A promise that resolves to void.
-     */
     async toVoid(): Promise<Void> {
         const response = await this._response;
         if(this._handler) {
@@ -394,23 +425,12 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
     }
 
 
-    /**
-     * Sets the URI for the request.
-     *
-     * @param uri - The URI to be used for the request.
-     * @returns The current instance of the `RestRequestMaker` for method chaining.
-     */
     uri(uri: string): RequestMaker<T> {
         this._uri = uri;
         return this;
     }
 
 
-    /**
-     * Converts the response to a `Response` object.
-     *
-     * @returns A promise that resolves to a `Response` object.
-     */
     async toResponse(): Promise<Response> {
         const response = await this._response;
         if(this._handler) {
@@ -420,23 +440,12 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
     }
 
 
-    /**
-     * Adds a query parameter to the request URI.
-     *
-     * @param param - The query parameter to be added to the request URI.
-     * @returns The current instance of the `RestRequestMaker` for method chaining.
-     */
     param(param: Param): RequestMaker<T> {
         this._params.append(param.key, param.value.toString())
         return this;
     }
 
 
-    /**
-     * Update the timeout to the fetch call.
-     * @param timeout - The time in millisecond to be assigned to fetch before abort.
-     * @return The current instance of the `RestRequestMaker` for method chaining.
-     */
     timeout(timeout: number): RequestMaker<T> {
         this._timeout = timeout;
         return this;
