@@ -117,10 +117,10 @@ export class RestClient {
      */
     static create() {
         class RestClientBuilder {
-            private _baseurl = '';
-            private _headers!: Header;
-            private _timout: number = 10000;
-            private _handler!: ResponseHandler;
+            _baseurl = '';
+            _headers!: Header;
+            _timout: number = 10000;
+            _handler!: ResponseHandler;
 
             /**
              * Sets the base URL for the `RestClient`.
