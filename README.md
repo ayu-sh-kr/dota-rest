@@ -119,7 +119,7 @@ Adding timeout during client buildup.
 ```typescript
 import {RestClient} from "@ayu-sh-kr/rest";
 
-const restClient = RestClient.creat()
+const restClient = RestClient.create()
     .baseUrl('http://localhost:8080')
     .defaultHeaders({'Authorization': 'Bearer kh.....'})
     .timeout(5000)
@@ -135,6 +135,67 @@ const response = await client.get<User>()
     .toResponse()
 ```
 
+#### Response Handler
+`RestClient` provide ability to set response handler which can be used to process response before resolving to
+`toEntity`, `toVoid` or `toReponse`. Response handler is function with one parameter `response` object should be 
+used to check the response for required `status` and prepare the error if the result is not favourable.
+
+Current implementation of response handler return void to keep it simple and provide bare minimum feature to user
+in order to reduce duplicate code error handling where same logic is implemented across the code.
+
+##### Request processing without response handling
+Here is an example of how to perform request without using a response handler:
+```typescript
+import { RestClient } from "@ayu-sh-kr/dota-rest";
+
+// Create a RestClient instance without a response handler
+const client = RestClient.create()
+    .baseUrl('https://api.example.com')
+    .defaultHeaders({ 'Authorization': 'Bearer token' })
+    .build();
+
+// Perform a GET request without the response handler
+const response = await client.get<User>()
+    .uri('/users/1')
+    .retrieve()
+    .toEntity();
+
+if (response.status !== 200) {
+    throw new Error(`Request failed with status code ${response.status}`);
+}
+
+console.log(response.data);
+```
+
+##### Request processing with a response handler
+Here is an example of how to use a response handler to process the response:
+```typescript
+import { RestClient } from "@ayu-sh-kr/dota-rest";
+
+// Define the response handler
+const responseHandler = (response: Response) => {
+    if (response.status !== 200) {
+        throw new Error(`Request failed with status code ${response.status}`);
+    }
+};
+
+// Create a RestClient instance with the response handler
+const client = RestClient.create()
+    .baseUrl('https://api.example.com')
+    .defaultHeaders({ 'Authorization': 'Bearer token' })
+    .handler(responseHandler)
+    .build();
+
+// Perform a GET request with the response handler
+const response = await client.get<User>()
+    .uri('/users/1')
+    .retrieve()
+    .toEntity();
+
+console.log(response.data);
+```
+
+Using a response handler simplifies the error handling logic by centralizing the response processing in a single function, reducing duplicate code and making the request handling more consistent.
 
 ## Conclusion
 
