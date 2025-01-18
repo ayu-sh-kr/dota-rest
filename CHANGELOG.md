@@ -1,5 +1,11 @@
 # @ayu-sh-kr/dota-rest
 
+## 1.0.7
+
+### Patch Changes
+
+- bf71574: Added response handler to manage the response for various status code
+
 ## 1.0.6
 
 ### Patch Changes
