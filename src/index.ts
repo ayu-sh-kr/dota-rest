@@ -34,6 +34,15 @@ export interface RequestMaker<T> {
      */
     body(item: object): RequestMaker<T>;
 
+
+    /**
+     * Add a converter which will be used to process the response data before resolving to `toEntity`.
+     * Provides type safety and if possible error handling too.
+     *
+     * @param converter - Converter function to map the json to Entity
+     */
+    converter(converter: ResponseConverter<T>): RequestMaker<T>
+
     /**
      * Initiates the fetch request with the configured URI, method, headers, and body.
      *
@@ -70,11 +79,57 @@ export interface RequestMaker<T> {
     timeout(timeout: number): RequestMaker<T>
 }
 
+
+export interface ClientBuilder {
+
+    /**
+     * Sets the base URL for the `RestClient`.
+     *
+     * @param url - The base URL to be used by the `RestClient`.
+     * @returns The current instance of the `RestClientBuilder` for method chaining.
+     */
+    baseUrl(url: string): ClientBuilder;
+
+    /**
+     * Sets the default headers for the `RestClient`.
+     *
+     * @param headers - The headers to be used by the `RestClient`.
+     * @returns The current instance of the `RestClientBuilder` for method chaining.
+     */
+    defaultHeaders(headers: Header): ClientBuilder;
+
+
+    /**
+     * Use this to set a response handler which will be used to process response before
+     * resolving to `toEntity`, `toVoid` or `toResponse`
+     * @param handler - Function to resolve response.
+     */
+    handler(handler: ResponseHandler): ClientBuilder;
+
+    /**
+     * Use this to set a timeout period after which the `fetch` call will be aborted.
+     *
+     * @param timeout - Time in milliseconds after which the fetch will be aborted
+     * @returns The current instance of the `RestClientBuilder` for method chaining.
+     */
+    timeout(timeout: number): ClientBuilder;
+
+
+    /**
+     * Builds and returns a new instance of the `RestClient` with the specified base URL and headers.
+     *
+     * @returns A new instance of the `RestClient` configured with the specified base URL and headers.
+     */
+    build(): RestClient;
+}
+
 export interface Entity<T> {
     status: number;
     data: T;
-    headers?: Headers;
-    type?: ResponseType;
+    headers: Headers;
+    type: ResponseType;
+    statusText: string;
+    isRedirected: boolean
 }
 
 export interface Void {
@@ -88,6 +143,7 @@ export type Param = {key: string, value: string | number};
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 export type ResponseHandler = (response: Response) => void;
+export type ResponseConverter<T> = (data: any) => T
 
 export interface RequestSetup {
     method?: HttpMethod
@@ -173,65 +229,34 @@ export class RestClient {
      *
      * @returns A new instance of the `RestClientBuilder` class.
      */
-    static create() {
-        class RestClientBuilder {
+    static create(): ClientBuilder {
+        class RestClientBuilder implements ClientBuilder{
             _baseurl = '';
             _headers!: Header;
             _timout: number = 10000;
             _handler!: ResponseHandler;
 
-            /**
-             * Sets the base URL for the `RestClient`.
-             *
-             * @param url - The base URL to be used by the `RestClient`.
-             * @returns The current instance of the `RestClientBuilder` for method chaining.
-             */
             public baseUrl(url: string) {
                 this._baseurl = url;
                 return this;
             }
 
-
-            /**
-             * Sets the default headers for the `RestClient`.
-             *
-             * @param headers - The headers to be used by the `RestClient`.
-             * @returns The current instance of the `RestClientBuilder` for method chaining.
-             */
             public defaultHeaders(headers: Header) {
                 this._headers = headers;
                 return this;
             }
 
 
-            /**
-             * Use this to set a timeout period after which the `fetch` call will be aborted.
-             *
-             * @param timeout - Time in milliseconds after which the fetch will be aborted
-             * @returns The current instance of the `RestClientBuilder` for method chaining.
-             */
             public timeout(timeout: number) {
                 this._timout = timeout;
                 return this;
             }
 
-
-            /**
-             * Use this to set a response handler which will be used to process response before
-             * resolving to `toEntity`, `toVoid` or `toResponse`
-             * @param handler - Function to resolve response.
-             */
             public handler(handler: ResponseHandler) {
                 this._handler = handler;
                 return this;
             }
 
-
-            /**
-             * Builds and returns a new instance of the `RestClient` with the specified base URL and headers.
-             *
-             * @returns A new instance of the `RestClient` configured with the specified base URL and headers.
-             */
             public build() {
                 return new RestClient({
                     baseUrl: this._baseurl,
@@ -349,8 +374,9 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
     private _response!: Promise<Response>;
     private _body!: string;
     private _uri!: string;
-    private _handler?: (response: Response) => void;
+    private readonly _handler?: (response: Response) => void;
     private readonly _params!: URLSearchParams;
+    private _converter?: ResponseConverter<T>;
 
     constructor(requestSetup: RequestSetup) {
         const {method, headers, baseUri, timeout, handler} = requestSetup;
@@ -385,6 +411,11 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
         return this;
     }
 
+    converter(converter: ResponseConverter<T>): RequestMaker<T> {
+        this._converter = converter;
+        return this;
+    }
+
 
     retrieve(): RequestMaker<T> {
         const uri = RestUtils.createURI({baseURI: this.baseUri, uri: this._uri, params: this._params});
@@ -408,7 +439,12 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
 
         const contentType = response.headers.get('Content-Type');
         if(contentType && contentType.includes('application/json')) {
-            entity.data = await response.json();
+            const json = await response.json();
+            if (this._converter) {
+                entity.data = this._converter(json)
+            } else {
+                entity.data = json;
+            }
         } else {
             entity.data = await response.text() as unknown as T;
         }
@@ -462,8 +498,8 @@ export class RestRequestMaker<T> implements RequestMaker<T>{
  * @typeParam T - The type of the response data.
  */
 export class ResponseEntity<T> implements Entity<T>{
-    public data!: T;
 
+    public data!: T;
 
     private constructor(
         public readonly status: number,
