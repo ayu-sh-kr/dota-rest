@@ -171,4 +171,31 @@ describe('RestRequestMaker', () => {
 
         await expect(requestMaker.toEntity()).rejects.toThrow('Request failed with status code 404');
     });
+
+    it('should use the provided converter to transform the response data', async () => {
+        const mockResponse = new Response(JSON.stringify({ data: 'test' }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+        });
+        (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+
+        const converter = (data: any) => {
+            return { transformedData: data.data.toUpperCase() };
+        };
+
+        const requestMaker = new RestRequestMaker({
+            method: 'GET',
+            baseUri: 'https://api.example.com',
+            timeout: 5000
+        });
+
+        requestMaker.uri('/test').converter(converter).retrieve();
+        const response = await requestMaker.toEntity();
+
+        expect(global.fetch).toHaveBeenCalledWith('https://api.example.com/test', expect.objectContaining({
+            method: 'GET',
+            signal: expect.any(AbortSignal)
+        }));
+        expect(response.data).toEqual({ transformedData: 'TEST' });
+    });
 });
