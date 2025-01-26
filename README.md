@@ -197,6 +197,91 @@ console.log(response.data);
 
 Using a response handler simplifies the error handling logic by centralizing the response processing in a single function, reducing duplicate code and making the request handling more consistent.
 
+#### ResponseConverter
+Use a converter to process the json data and its mapping to the required object. The converter is a function that takes the json object and returns the data in the required format.
+
+Here is an example of using a converter with the `RestClient` for a GET request, along with a dummy type:
+
+First, define the dummy type:
+
+```typescript
+interface User {
+    id: number;
+    name: string;
+    email: string;
+}
+```
+
+Next, create a converter function that processes the JSON data and maps it to the `User` type:
+
+```typescript
+const userConverter = (data: any): User => {
+    return {
+        id: data.id,
+        name: data.name,
+        email: data.email
+    };
+};
+```
+
+Now, use the `RestClient` to perform a GET request with the converter:
+
+```typescript
+import { RestClient } from "@ayu-sh-kr/dota-rest";
+
+// Create a RestClient instance
+const client = RestClient.create()
+    .baseUrl('https://api.example.com')
+    .defaultHeaders({ 'Authorization': 'Bearer token' })
+    .build();
+
+// Perform a GET request with the converter
+const response = await client.get<User>()
+    .uri('/users/1')
+    .converter(userConverter)
+    .retrieve()
+    .toEntity();
+
+console.log(response.data);
+```
+
+In this example, the `userConverter` function is used to transform the response data into the `User` type. The `RestClient` instance is configured to use this converter when performing the GET request.
+
+The example taken is in its simplest form, we can do more than just mapping the field to it's type. Instead we may
+required to return an object with additional fields or perform some operation on the data before returning it.
+
+Here is an example of a converter function that maps the response data to a `User` class and checks for data types, converting them as necessary:
+
+First, define the `User` class:
+
+```typescript
+class User {
+    id: number;
+    name: string;
+    email: string;
+
+    constructor(id: number, name: string, email: string) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+    }
+}
+```
+
+Next, create the converter function:
+
+```typescript
+const userConverter = (data: any): User => {
+    const id = typeof data.id === 'number' ? data.id : parseInt(data.id, 10);
+    const name = typeof data.name === 'string' ? data.name : String(data.name);
+    const email = typeof data.email === 'string' ? data.email : String(data.email);
+
+    return new User(id, name, email);
+};
+```
+
+This converter function ensures that the `id` is a number, and `name` and `email` are strings before creating a new `User` instance.
+
 ## Conclusion
 
 This documentation covers the basic usage of the `RestClient` class for making HTTP requests. 
