@@ -1,5 +1,11 @@
 # @ayu-sh-kr/dota-rest
 
+## 1.0.8
+
+### Patch Changes
+
+- 56e9362: Add converter to map json data as the user wants, giving more control over the api response
+
 ## 1.0.7
 
 ### Patch Changes

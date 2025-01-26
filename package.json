@@ -1,6 +1,6 @@
 {
   "name": "@ayu-sh-kr/dota-rest",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "author": "ayu-sh-kr",
   "repository": {
     "type": "git",
@@ -27,5 +27,11 @@
     "typescript": "^5.5.3"
   },
   "private": false,
-  "keywords": ["fetch", "http-client", "rest-client", "rest-api", "fetch-api"]
+  "keywords": [
+    "fetch",
+    "http-client",
+    "rest-client",
+    "rest-api",
+    "fetch-api"
+  ]
 }
