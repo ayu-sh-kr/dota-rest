@@ -8,7 +8,7 @@
   },
   "description": "@ayu-sh-kr/dota-rest is a simple, intuitive and fluent Rest Client base on the 'fetch' API",
   "main": "dist/index.js",
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "type": "module",
   "scripts": {
     "lint": "tsc",
