@@ -1,5 +1,11 @@
 # @ayu-sh-kr/dota-rest
 
+## 1.0.10
+
+### Patch Changes
+
+- b89c031: change for interop
+
 ## 1.0.9
 
 ### Patch Changes
