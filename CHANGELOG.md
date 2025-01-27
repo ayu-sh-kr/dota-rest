@@ -1,5 +1,11 @@
 # @ayu-sh-kr/dota-rest
 
+## 1.0.9
+
+### Patch Changes
+
+- 8d49948: Modify the build to support project using commonjs and es modules
+
 ## 1.0.8
 
 ### Patch Changes
