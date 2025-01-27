@@ -7,12 +7,13 @@
     "url": "https://github.com/ayu-sh-kr/dota-rest"
   },
   "description": "@ayu-sh-kr/dota-rest is a simple, intuitive and fluent Rest Client base on the 'fetch' API",
-  "main": "dist/index.mjs",
+  "main": "dist/index.js",
   "module": "dist/index.mjs",
+  "type": "module",
   "scripts": {
     "lint": "tsc",
     "test": "jest",
-    "build": "tsup src/index.ts --format esm --dts",
+    "build": "tsup src/index.ts --format esm, cjs --dts",
     "release": "pnpm run build && changeset publish"
   },
   "devDependencies": {
