@@ -21,11 +21,13 @@ To create and configure an instance of `RestClient`, use the `RestClientBuilder`
 ```typescript
 import {RestClient} from "@ayu-sh-kr/dota-rest";
 
-const client = RestClient.create()
+const client = RestClient.builder()
     .baseUrl('https://api.example.com')
     .defaultHeaders({'Authorization': 'Bearer token'})
     .build();
 ```
+
+> After version >= 1.1.0 use the `RestClient.builder()` to create the instance of `RestClient` instead of using the create method.
 
 ### Performing Requests
 
@@ -119,7 +121,7 @@ Adding timeout during client buildup.
 ```typescript
 import {RestClient} from "@ayu-sh-kr/rest";
 
-const restClient = RestClient.create()
+const restClient = RestClient.builder()
     .baseUrl('http://localhost:8080')
     .defaultHeaders({'Authorization': 'Bearer kh.....'})
     .timeout(5000)
@@ -149,7 +151,7 @@ Here is an example of how to perform request without using a response handler:
 import { RestClient } from "@ayu-sh-kr/dota-rest";
 
 // Create a RestClient instance without a response handler
-const client = RestClient.create()
+const client = RestClient.builder()
     .baseUrl('https://api.example.com')
     .defaultHeaders({ 'Authorization': 'Bearer token' })
     .build();
@@ -180,7 +182,7 @@ const responseHandler = (response: Response) => {
 };
 
 // Create a RestClient instance with the response handler
-const client = RestClient.create()
+const client = RestClient.builder()
     .baseUrl('https://api.example.com')
     .defaultHeaders({ 'Authorization': 'Bearer token' })
     .handler(responseHandler)
@@ -230,7 +232,7 @@ Now, use the `RestClient` to perform a GET request with the converter:
 import { RestClient } from "@ayu-sh-kr/dota-rest";
 
 // Create a RestClient instance
-const client = RestClient.create()
+const client = RestClient.builder()
     .baseUrl('https://api.example.com')
     .defaultHeaders({ 'Authorization': 'Bearer token' })
     .build();
