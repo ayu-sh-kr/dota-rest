@@ -113,6 +113,14 @@ export class RestClient {
   }
 
   /**
+   * Creates a new instance of the `RestClientBuilder`. This method there to
+   * provide backward compatibility with the old code.
+   */
+  static create(): ClientBuilder {
+    return RestClient.builder();
+  }
+
+  /**
    * Creates a new instance of the `RestClientBuilder` class, which is used to configure and build a `RestClient` instance.
    *
    * The `RestClientBuilder` class provides methods to set the base URL and default headers for the `RestClient`.
