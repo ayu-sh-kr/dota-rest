@@ -1,5 +1,11 @@
 # @ayu-sh-kr/dota-rest
 
+## 1.1.1
+
+### Patch Changes
+
+- d31eedf: added backward compatibility for RestClient changes
+
 ## 1.1.0
 
 ### Minor Changes
