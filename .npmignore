@@ -9,3 +9,4 @@ tsconfig.json
 CHANGELOG.md
 pnpm-lock.yaml
 jest.config.ts
+.editorconfig
