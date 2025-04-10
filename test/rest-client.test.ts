@@ -114,4 +114,37 @@ describe('RestClient', () => {
     expect(requestBuilder).toHaveProperty("_defaultHeaders", {})
   });
 
+  it('should call the API and resolve response to an entity', async () => {
+    const restClient = RestClient.builder()
+      .baseUrl('https://api.example.com')
+      .defaultHeaders({
+        'Content-Type': 'application/json',
+      })
+      .build();
+
+    const mockResponse = new Response(JSON.stringify({key: 'value'}), {
+      status: 200,
+      headers: {'Content-Type': 'application/json'}
+    });
+    (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+
+    const response = await restClient.get<{ key: string }>()
+      .uri('/test')
+      .retrieve()
+      .handler((response) => {
+        expect(response.status).toBe(200);
+        expect(response.headers.get('Content-Type')).toBe('application/json');
+      })
+      .converter((data:any) => {
+        expect(data).toEqual({key: 'value'});
+        return {
+          key: data.key,
+        }
+      })
+      .toEntity();
+
+    expect(response).toBeDefined();
+    expect(response.status).toBe(200);
+    expect(response.data).toEqual({key: 'value'});
+  });
 });
