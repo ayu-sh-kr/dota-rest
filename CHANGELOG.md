@@ -1,5 +1,11 @@
 # @ayu-sh-kr/dota-rest
 
+## 1.1.2
+
+### Patch Changes
+
+- a376385: removed editorconfig from build
+
 ## 1.1.1
 
 ### Patch Changes
