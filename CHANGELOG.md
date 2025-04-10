@@ -1,5 +1,11 @@
 # @ayu-sh-kr/dota-rest
 
+## 1.1.0
+
+### Minor Changes
+
+- 615e964: Refactored whole project to handle issue with fluent api, enhance the developer experience with RestClient and ensure error less requests
+
 ## 1.0.10
 
 ### Patch Changes
