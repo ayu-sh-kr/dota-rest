@@ -1,5 +1,11 @@
 # @ayu-sh-kr/dota-rest
 
+## 1.1.3
+
+### Patch Changes
+
+- 3802ca9: Fix URLSearchParam not available in browser issue
+
 ## 1.1.2
 
 ### Patch Changes
