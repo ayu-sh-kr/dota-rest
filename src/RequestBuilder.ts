@@ -1,4 +1,3 @@
-import {URLSearchParams} from "node:url";
 import {RestRequestRetriever} from "@dota/RequestRetriever.ts";
 import {Header, HttpMethod, RequestSetup, ResponseHandler} from "@dota/Types.ts";
 import {ResponseResolver} from "@dota/ResponseResolver.ts";
